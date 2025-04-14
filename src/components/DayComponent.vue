@@ -1,31 +1,35 @@
 <template>
-  <div class="day-container" v-if="hasActivities">
-    <div :class="`name-of-day-container ${containerHeightClass}`">
-      <div :class="`name-of-day-holder ${containerHeightClass}`">
-        <span class="day-name">
-        {{ nameOfDay }}
-        </span>
-      </div>
-    </div>
+  <li class="day-container">
+    <img
+      id="blue-flower-left"
+      src="../assets/blue_flower.png"
+      v-if="idx == 3"
+    />
 
-    <div :class="`content-of-day-container ${containerHeightClass}`">
+    <span class="day-name">
+      {{ nameOfDay }}
+    </span>
+
+    <div :class="{
+      'content-of-day-container': true,
+      'full-height': activities.length == 2,
+      'half-height': activities.length == 1
+    }">
       <KoalaActivityComponent
         v-for="activity in activities"
         :activity="activity"
-        class="content-of-day"
-      />
-
+        class="content-of-day" />
     </div>
-  </div>
+  </li>
 </template>
 
 <script lang="ts">
-import {defineComponent, type PropType} from "vue"
-import type {KoalaActivity} from "@/scripts/koala.ts";
+import { defineComponent, type PropType } from "vue"
+import type { KoalaActivity } from "@/scripts/koala.ts";
 import KoalaActivityComponent from "@/components/KoalaActivityComponent.vue";
 
 export default defineComponent({
-  components: {KoalaActivityComponent},
+  components: { KoalaActivityComponent },
   props: {
     date: {
       type: Object as PropType<Date>,
@@ -34,6 +38,11 @@ export default defineComponent({
     activities: {
       type: Array as PropType<KoalaActivity[]>,
       required: true,
+      validator: (l: KoalaActivity[]) => !!l.length
+    },
+    idx: {
+      type: Number as PropType<number>,
+      required: true
     }
   },
   computed: {
@@ -49,6 +58,7 @@ export default defineComponent({
         case 5: return "Friday";
         case 6: return "Saturday";
         case 0: return "Sunday";
+        default: throw new Error("Invalid input, expected number between 0-6");
       }
     },
     containerHeightClass(): string {
@@ -72,62 +82,50 @@ $day-height-single: 7.5rem;
 $name-of-day-height: 3.5rem;
 
 .day-container {
-  padding: 3rem;
-
-  display: flex;
-  flex-direction: row;
-  justify-items: start;
-  align-items: center;
-}
-
-.name-of-day-holder {
-  background-color: lightblue;
-  padding: 1rem 3rem;
-  border-radius: $border-radius;
-  width: 10rem;
+  font-family: 'Outfit', sans-serif;
   position: relative;
-  height: $name-of-day-height;
-  // Height of container - half the height of self
-  vertical-align: center;
-}
+  width: 100%;
 
-.name-of-day-holder.day-height-single {
-  top: math.div($day-height-single, 2) - math.div($name-of-day-height, 2);
-}
+  #blue-flower-left {
+    position: absolute;
+    width: 40px;
+    left: calc(4rem - 20px);
+    bottom: -20px;
+    z-index: 100;
+  }
 
-.name-of-day-holder.day-height-double {
-  top: math.div($day-height, 2) - math.div($name-of-day-height, 2);
-}
+  .day-name {
+    color: main.$board_color;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    transform: translate(.75rem, -50%);
+    font-size: 1.1rem;
+    width: calc(1.1 * 9ch);
+    z-index: 10;
+    background: #cbf3f0;
+    padding: .75rem .5rem;
+    border-radius: 10px;
+  }
 
-.name-of-day-container.day-height-single,
-.content-of-day-container.day-height-single {
-  height: $day-height-single;
-}
+  .content-of-day-container {
+    width: calc(100% - 1.1 * 9ch + 1rem);
+    padding: .5rem 1rem .5rem 4.5rem;
+    background-color: main.$board-color;
+    border-radius: 10px;
+    transform: translateX(4rem);
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: 1fr 1fr;
+    gap: .75rem;
 
-.name-of-day-container.day-height-double,
-.content-of-day-container.day-height-double {
-  height: $day-height
-}
+    &.half-height {
+      height: 4rem;
+    }
 
-.name-of-day-container {
-  background: linear-gradient(90deg, #FFFFFF 75%, main.$board_color 25%);
-}
-
-.day-name {
-  color: main.$board_color;
-  font-weight: bold;
-}
-
-.content-of-day-container {
-  width: 30rem;
-  height: $day-height;
-
-  padding: 2rem 1rem;
-  background-color: main.$board-color;
-  border-radius: 0 $border-radius $border-radius 0;
-}
-
-.content-of-day {
-  margin-bottom: 1rem;
+    &.full-height {
+      height: 8rem;
+    }
+  }
 }
 </style>
