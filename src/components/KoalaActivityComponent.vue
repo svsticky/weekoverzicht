@@ -44,7 +44,7 @@ export default defineComponent({
 })
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 .koala-activity {
   display: grid;
   grid-template-columns: 1fr 4fr;

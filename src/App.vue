@@ -11,10 +11,6 @@ export default defineComponent({
 })
 </script>
 
-<style scoped>
-
-</style>
-
 <style lang="scss">
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Winky+Sans:wght@300..900&display=swap');
 </style>

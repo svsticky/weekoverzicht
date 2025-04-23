@@ -4,21 +4,27 @@
   </div>
 
   <div class="weekly-overview-container">
-    <img id="dots-top-left" src="../assets/small_dots.png" />
-    <img id="orange-flower-left" src="../assets/orange_flower.png" />
-    <img id="orange-flower-right" src="../assets/orange_flower.png" />
-    <img id="dots-bottom-right" src="../assets/big_dots.png" />
-
     <h1 class="weekly-overview-title">
       Weekly overview
     </h1>
 
     <ul>
       <DayComponent
-        v-for="(activity, idx) in activities"
+        v-for="(activity, idx) in activities.slice(0, 5)"
         :activities="activity"
         :date="new Date(new Date().setDate(getMonday(new Date).getDate() + idx))"
-        :idx="idx"
+      />
+
+      <DayComponent
+        v-if="!!activities[5].length"
+        :activities="activities[5]"
+        :date="new Date(new Date().setDate(getMonday(new Date).getDate() + 5))"
+      />
+
+      <DayComponent
+        v-if="!!activities[6].length"
+        :activities="activities[6]"
+        :date="new Date(new Date().setDate(getMonday(new Date).getDate() + 6))"
       />
     </ul>
   </div>
@@ -43,7 +49,7 @@ export default defineComponent({
     return {
       error: undefined,
       loading: true,
-      activities: [[]],
+      activities: [[], [], [], [], [], [], []],
     }
   },
   async mounted() {
@@ -57,7 +63,7 @@ export default defineComponent({
       if (r.isOk()) {
         const activities = r.unwrap();
         const thisWeek = this.thisWeekFilter(activities);
-        this.activities = this.splitByDay(thisWeek).filter(l => !!l.length).slice(0, 5);
+        this.activities = this.splitByDay(thisWeek);
       } else {
         this.error = r.unwrapErr().message ?? "Er is iets verkeerd gegaan, probeer het later opnieuw";
       }
@@ -66,18 +72,17 @@ export default defineComponent({
     },
     thisWeekFilter(input: KoalaActivity[]): KoalaActivity[] {
       const monday = this.getMonday(new Date());
-      let friday = new Date();
+      const friday = new Date();
       friday.setDate(monday.getDate() + 7);
 
-      // return input.filter((activity) => {
-      //   const start = new Date(activity.start_date);
-      //   const end = activity.end_date
-      //     ? new Date(activity.end_date)
-      //     : start;
+      return input.filter((activity) => {
+        const start = new Date(activity.start_date);
+        const end = activity.end_date
+          ? new Date(activity.end_date)
+          : start;
 
-      //   return start >= monday && end <= friday;
-      // });
-      return input;
+        return start >= monday && end <= friday;
+      });
     },
     getMonday(d: Date) {
       const day = d.getDay();
@@ -85,22 +90,14 @@ export default defineComponent({
       return new Date(d.setDate(diff));
     },
     splitByDay(input: KoalaActivity[]): KoalaActivity[][] {
-      let output: KoalaActivity[][] =
-        new Array(21).fill(0).map(() => []);
-      const monday = this.getMonday(new Date());
+      const output: KoalaActivity[][] = new Array(7).fill(0).map(() => []);
 
       for (const activity of input) {
-        const diffTime = Math.abs(new Date(activity.start_date).getTime() - monday.getTime());
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-        if (output[diffDays]) {
-          output[diffDays].push(activity)
-        } else {
-          output[diffDays] = [activity];
-        }
+        const day_index = new Date(activity.start_date).getDay();
+        output[day_index].push(activity);
       }
 
-      return output;
+      return output.slice(1, 6).concat([output[6], output[0]]);
     }
   }
 })
@@ -110,57 +107,9 @@ export default defineComponent({
 @use "@/assets/main";
 @use "sass:color";
 
-$title-orange: #ff9f1c;
-
 .error-banner {
   background-color: indianred;
   color: white;
-}
-
-#dots-top-left {
-  position: absolute;
-  top: -5px;
-  left: -9px;
-  width: 40px;
-  aspect-ratio: 1 / 1;
-  z-index: 0;
-}
-
-#orange-flower-left {
-  position: absolute;
-  top: 200px;
-  left: -16px;
-  width: 60px;
-  aspect-ratio: 1 / 1;
-  z-index: 0;
-}
-
-#orange-flower-right {
-  position: absolute;
-  top: 490px;
-  right: -10px;
-  width: 40px;
-  aspect-ratio: 1 / 1;
-  z-index: 0;
-  transform: rotate(10deg);
-}
-
-#blue-flower-left {
-  position: absolute;
-  top: 635px;
-  left: 3rem;
-  width: 40px;
-  aspect-ratio: 1 / 1;
-  z-index: 3;
-}
-
-#dots-bottom-right {
-  position: absolute;
-  bottom: -20px;
-  right: -14px;
-  width: 6rem;
-  aspect-ratio: 1 / 1;
-  z-index: 4;
 }
 
 .weekly-overview-container {
@@ -178,8 +127,8 @@ $title-orange: #ff9f1c;
     font-size: 62.5px;
     font-family: "Winky Sans", Ubuntu, serif;
     font-weight: bold;
-    color: $title-orange;
-    text-shadow: color.adjust($title-orange, $alpha: -0.5) 4px 2px;
+    color: main.$board_color;
+    text-shadow: color.adjust(main.$board_color, $alpha: -0.5) 4px 2px;
     z-index: 10;
   }
 

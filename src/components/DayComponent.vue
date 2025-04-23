@@ -1,24 +1,28 @@
 <template>
   <li class="day-container">
-    <img
-      id="blue-flower-left"
-      src="../assets/blue_flower.png"
-      v-if="idx == 3"
-    />
-
     <span class="day-name">
       {{ nameOfDay }}
     </span>
 
-    <div :class="{
-      'content-of-day-container': true,
-      'full-height': activities.length == 2,
-      'half-height': activities.length == 1
-    }">
+    <div
+      v-if="!!activities.length"
+      :class="{
+        'content-of-day-container': true,
+        'full-height': activities.length == 2,
+        'half-height': activities.length == 1
+      }"
+    >
       <KoalaActivityComponent
         v-for="activity in activities"
         :activity="activity"
         class="content-of-day" />
+    </div>
+
+    <div
+      v-else
+      class="content-of-day-container half-height no-activities"
+    >
+      <span>No activities</span>
     </div>
   </li>
 </template>
@@ -33,15 +37,10 @@ export default defineComponent({
   props: {
     date: {
       type: Object as PropType<Date>,
-      required: true,
+      required: true
     },
     activities: {
       type: Array as PropType<KoalaActivity[]>,
-      required: true,
-      validator: (l: KoalaActivity[]) => !!l.length
-    },
-    idx: {
-      type: Number as PropType<number>,
       required: true
     }
   },
@@ -86,14 +85,6 @@ $name-of-day-height: 3.5rem;
   position: relative;
   width: 100%;
 
-  #blue-flower-left {
-    position: absolute;
-    width: 40px;
-    left: calc(4rem - 20px);
-    bottom: -20px;
-    z-index: 100;
-  }
-
   .day-name {
     color: main.$board_color;
     font-weight: bold;
@@ -125,6 +116,19 @@ $name-of-day-height: 3.5rem;
 
     &.full-height {
       height: 8rem;
+    }
+
+    &.no-activities {
+      grid-template-rows: 1fr;
+
+      span {
+        margin: auto;
+        line-height: 1.1;
+        font-weight: bold;
+        font-size: .9rem;
+        color: white;
+        display: block;
+      }
     }
   }
 }
